@@ -91,6 +91,7 @@ public class Manager {
                     + st.first_name + "', '" + st.major + "', '" + st.grade + "', '"
                     + st.grade_option + "', '" + st.honor + "', '" + st.notes
                     + "', '" + st.photo + "', " + roster_id +  ")");
+
             if (success != 0) {
                 System.out.println("Successfully inserted student.");
             }
@@ -129,10 +130,7 @@ public class Manager {
                         st.honor + "', notes = '" + st.notes + "', photo_url = '" + st.photo + "' "
                         + "WHERE student_id = '" + st.id_number + "'");
                 if (success != 0) {
-                    //ResultSet rs = stmt.executeQuery("SELECT LAST_INSERT_ID() FROM students");
-                    //rs.next();
-                    //System.out.println("Successfully inserted " + first + " " + last + " with student ID #" + rs.getInt(1) + ".");
-                    //rs.close();
+                    System.out.println("Successfully updated student.");
                 } else {
                     System.out.println("Did not update student.");
                 }
@@ -246,6 +244,31 @@ public class Manager {
             System.out.println("VendorError: " + ex.getErrorCode());
         }
        return roster_id;
+    }
+
+    public int queryRoster(String name){
+        int roster_id = 0;
+        try{
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT roster_id " +
+                    "FROM rosters " +
+                    "WHERE roster_name = '" + name + "'");
+            if (rs.next()) {
+                roster_id = rs.getInt(1);
+            }
+            else{
+                System.out.println("Did not find roster.");
+            }
+            stmt.close();
+            rs.close();
+        }
+        catch (SQLException ex) {
+            // handle any errors
+            System.out.println("SQLException: " + ex.getMessage());
+            System.out.println("SQLState: " + ex.getSQLState());
+            System.out.println("VendorError: " + ex.getErrorCode());
+        }
+        return roster_id;
     }
 
     public void updateRoster(String name, int roster_id){
