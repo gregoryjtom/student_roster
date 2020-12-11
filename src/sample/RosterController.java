@@ -445,11 +445,11 @@ public class RosterController implements Initializable {
     @FXML
     private void newFile() throws Exception{
         // open up separate window
-        Parent newWindow = FXMLLoader.load(getClass().getResource("newFile.fxml"));
+        Parent newWindow = FXMLLoader.load(getClass().getResource("resources/fxml/newFile.fxml"));
         final Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         Scene dialogScene = new Scene(newWindow, 300, 200);
-        dialogScene.getStylesheets().add(getClass().getResource("newFileWindow.css").toExternalForm());
+        dialogScene.getStylesheets().add(getClass().getResource("resources/css/newFileWindow.css").toExternalForm());
         dialog.setScene(dialogScene);
         dialog.show();
     }
@@ -464,11 +464,11 @@ public class RosterController implements Initializable {
         }
 
         // open up separate window
-        Parent openWindow = FXMLLoader.load(getClass().getResource("fileChooser.fxml"));
+        Parent openWindow = FXMLLoader.load(getClass().getResource("resources/fxml/fileChooser.fxml"));
         final Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         Scene dialogScene = new Scene(openWindow, 300, 200);
-        dialogScene.getStylesheets().add(getClass().getResource("openFileWindow.css").toExternalForm());
+        dialogScene.getStylesheets().add(getClass().getResource("resources/css/openFileWindow.css").toExternalForm());
         dialog.setScene(dialogScene);
         dialog.show();
     }
@@ -483,14 +483,14 @@ public class RosterController implements Initializable {
     @FXML
     private void saveAs() throws Exception{
         // open up separate window
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("saveAs.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("resources/fxml/saveAs.fxml"));
         SaveAsController saveAsController= new SaveAsController(listStudents,(Stage) saveAsFileBtn.getScene().getWindow(), roster_id);
         loader.setController(saveAsController);
         Parent saveAsWindow = loader.load();
         final Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         Scene dialogScene = new Scene(saveAsWindow, 300, 200);
-        dialogScene.getStylesheets().add(getClass().getResource("newFileWindow.css").toExternalForm());
+        dialogScene.getStylesheets().add(getClass().getResource("resources/css/newFileWindow.css").toExternalForm());
         dialog.setScene(dialogScene);
         dialog.show();
     }
