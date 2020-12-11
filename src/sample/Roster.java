@@ -9,27 +9,35 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
+import javafx.geometry.Side;
 import javafx.scene.Scene;
+import javafx.scene.chart.*;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Roster {
-    private int max_students = 100;
-    private int max_rosters = 20;
-    private TextField[] tfArr = new TextField[3];
-    private ObservableList<String> major_values = FXCollections.observableArrayList("Anthropology and Sociology",
+    private final int max_students = 100;
+    private final int max_rosters = 20;
+    private final TextField[] tfArr = new TextField[3];
+    private final ObservableList<String> major_values = FXCollections.observableArrayList("Anthropology and Sociology",
             "Art",
             "Biology",
             "Business and Management",
@@ -62,11 +70,10 @@ public class Roster {
     private TextArea ta = new TextArea();
     private final Button openButton = new Button("Open a Picture...");
     private final FileChooser fileChooser = new FileChooser();
+    private Text nameText = new Text();
     private ImageView iv = new ImageView();
     private Button newBtn = new Button("New Student");
     private Button deleteBtn = new Button("Delete Student");
-    private Button prevBtn = new Button("Previous Student");
-    private Button nextBtn = new Button("Next Student");
     private Text actionText = new Text();
     private Button saveChangesBtn = new Button("Save Changes");
     private Button newFileBtn = new Button("New");
@@ -77,8 +84,10 @@ public class Roster {
     private Button saveAsBtn = new Button("Save As");
     private int roster_id;
     private String roster_name;
-    private Manager manager = new Manager();
-    private Vector<Student> students;
+    private Manager manager = Manager.getInstance();
+    private ObservableList<Student> listStudents;
+    private final ObservableList<PieChart.Data> pieData = FXCollections.observableArrayList();
+    private final ObservableList<XYChart.Data<String,Number>> barData = FXCollections.observableArrayList();
     private AtomicInteger curr = new AtomicInteger();
     private final Student[] currSt = new Student[1];
 
@@ -89,14 +98,13 @@ public class Roster {
         this.roster_name = roster_name;
 
         // manager and students array
-        manager.initializeDB();
-        students = manager.queryStudentsInRoster(roster_id);
-        if(students.size() == 0){
-            System.out.println("No students.");
-            students.add(new Student());
+        Vector<Student> students = manager.queryStudentsInRoster(roster_id);
+        listStudents = FXCollections.observableArrayList(students);
+        if(listStudents.size() == 0){
+            listStudents.add(new Student());
         }
         curr.set(0);
-        currSt[0] = students.get(curr.get());
+        currSt[0] = listStudents.get(curr.get());
 
         // first 3 textfields
         for (int i = 0; i < 3; i++){
@@ -117,13 +125,13 @@ public class Roster {
         newBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                if (students.size()+1 > max_students){
+                if (listStudents.size()+1 > max_students){
                     System.out.println("Max students reached.");
                 }
                 else {
-                    students.add(new Student());
-                    curr.set(students.size()-1);
-                    currSt[0] = students.get(curr.get());
+                    listStudents.add(new Student());
+                    curr.set(listStudents.size()-1);
+                    currSt[0] = listStudents.get(curr.get());
                     fillStudentInfo();
                 }
             }
@@ -134,44 +142,24 @@ public class Roster {
         deleteBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                Student st = students.get(curr.get());
-                manager.deleteStudent(st.id_number);
-                students.remove(curr.get());
-                if (curr.get() < students.size()){
+                Student st = listStudents.get(curr.get());
+                manager.deleteStudent(st.getId_number());
+                listStudents.remove(curr.get());
+                if (curr.get() < listStudents.size()){
                     // show same index
-                    currSt[0] = students.get(curr.get());
+                    currSt[0] = listStudents.get(curr.get());
                 }
                 else if(curr.get() > 0){
                     // show previous index
                     curr.getAndDecrement();
-                    currSt[0] = students.get(curr.get());
-
+                    currSt[0] = listStudents.get(curr.get());
                 }
                 else{
                     // show new
-                    students.add(new Student());
-                    curr.set(students.size()-1);
-                    currSt[0] = students.get(curr.get());
+                    listStudents.add(new Student());
+                    curr.set(listStudents.size()-1);
+                    currSt[0] = listStudents.get(curr.get());
                 }
-                fillStudentInfo();
-            }
-        });
-
-        // previous student button
-        prevBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                curr.getAndDecrement();
-                currSt[0] = students.get(curr.get());
-                fillStudentInfo();
-            }
-        });
-
-        nextBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                curr.getAndIncrement();
-                currSt[0] = students.get(curr.get());
                 fillStudentInfo();
             }
         });
@@ -181,7 +169,7 @@ public class Roster {
         });
 
         saveBtn.setOnAction(e->{
-            for (Student student: students){
+            for (Student student: listStudents){
                 manager.updateStudent(student,roster_id);
             }
         });
@@ -189,24 +177,40 @@ public class Roster {
         // TODO: add open button and saveAs button later (need stage)
     }
 
-    public void start(Stage[] primaryStage){
+    public void start(){
         // all front end work
         final Stage rosterStage = new Stage();
         rosterStage.initModality(Modality.APPLICATION_MODAL);
-        rosterStage.initOwner(primaryStage[0]);
 
-        FlowPane pane = new FlowPane();
-        pane.setOrientation(Orientation.VERTICAL);
+        /**
+         * ALL PANES
+         */
 
         BorderPane root = new BorderPane();
-        root.setCenter(pane);
 
+        TabPane tabPane = new TabPane();
+        Tab rosterTab = new Tab("Roster");
+        Tab statsTab = new Tab("Stats");
+        tabPane.getTabs().addAll(rosterTab,statsTab);
+        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        root.setCenter(tabPane);
+
+        // two panes for roster and stats
+
+        BorderPane rosterPane = new BorderPane();
+        rosterTab.setContent(rosterPane);
+
+        ScrollPane statsPane = new ScrollPane();
+        statsTab.setContent(statsPane);
+
+        // top file panel
         HBox topPanel = new HBox();
         topPanel.setStyle("-fx-background-color: #8aaff2;");
         topPanel.setPadding(new Insets(5, 12, 5, 12));
         topPanel.setSpacing(10);
         root.setTop(topPanel);
 
+        // bottom panel
         AnchorPane anchorPane = new AnchorPane();
         anchorPane.setStyle("-fx-background-color: #d1c9c9;");
 
@@ -221,8 +225,301 @@ public class Roster {
         anchorPane.setRightAnchor(rightBottomPanel,5.);
 
         anchorPane.getChildren().addAll(leftBottomPanel,rightBottomPanel);
+        rosterPane.setBottom(anchorPane);
 
-        root.setBottom(anchorPane);
+        // pane for the entire center
+        ScrollPane scrollPane = new ScrollPane();
+        rosterPane.setCenter(scrollPane);
+
+        BorderPane center = new BorderPane();
+        center.setPadding(new Insets (10,12,10,12));
+        scrollPane.setContent(center);
+
+        // pane for the table view
+        HBox tablePane = new HBox();
+        tablePane.setPadding(new Insets(10,12,10,12));
+        center.setTop(tablePane);
+
+        // pane for the student view
+        BorderPane bottom = new BorderPane();
+        bottom.setPadding(new Insets(10,12,10,12));
+        center.setCenter(bottom);
+
+        // pane for all the student items
+        FlowPane pane = new FlowPane();
+        pane.setOrientation(Orientation.VERTICAL);
+        bottom.setCenter(pane);
+
+        // top pane holding picture plus student name
+        HBox titlePanel = new HBox();
+        titlePanel.setSpacing(30);
+        titlePanel.setPrefHeight(80);
+
+        iv.setFitHeight(70);
+        iv.setPreserveRatio(true);
+
+        StackPane namePane = new StackPane(nameText);
+        nameText.setFont(Font.font("Arial", FontWeight.BOLD, 30));
+
+        titlePanel.getChildren().addAll(namePane,iv);
+        bottom.setTop(titlePanel);
+
+        /**
+         * CHARTS
+         */
+
+        // after any update, go through students and update data (add to savechanges? fill student info?);
+        // create another method called update piechart
+
+        HBox hbox_chart = new HBox();
+        hbox_chart.setSpacing(20);
+
+        PieChart pieChart = new PieChart(pieData);
+        pieChart.setTitle("Majors");
+        pieChart.setLegendSide(Side.LEFT);
+
+        final CategoryAxis xAxis = new CategoryAxis();
+        final NumberAxis yAxis = new NumberAxis();
+        final BarChart<String,Number> barChart =
+                new BarChart<String,Number>(xAxis,yAxis);
+        barChart.setTitle("Grades");
+        xAxis.setLabel("Grade");
+        yAxis.setLabel("Frequency");
+        XYChart.Series<String, Number> series = new XYChart.Series<>("All Students", barData);
+        barChart.getData().setAll(series);
+
+        hbox_chart.getChildren().addAll(pieChart,barChart);
+        statsPane.setContent(hbox_chart);
+
+        /**
+         * TABLE AT TOP
+         */
+
+        //photo
+        TableColumn<Student,String> columnPhoto = new TableColumn<>("Photo");
+        columnPhoto.setCellFactory(param -> {
+            //Set up the ImageView
+            final ImageView imageview = new ImageView();
+            imageview.setFitHeight(50);
+            imageview.setPreserveRatio(true);
+
+            //Set up the Table
+            TableCell<Student, String> cell = new TableCell<Student, String>() {
+                @Override
+                public void updateItem(String im, boolean empty) {
+                    setEditable(false);
+                    if (im != null && !im.equals("")) {
+                        imageview.setImage(new Image(im));
+                    }
+                    else{
+                        imageview.setImage(null);
+                    }
+                }
+            };
+
+            // Attach the imageview to the cell
+            cell.setGraphic(imageview);
+            return cell;
+        });
+        columnPhoto.setCellValueFactory(new PropertyValueFactory<>("photo"));
+
+        // first 3
+        TableColumn<Student,String> columnId = new TableColumn<>("ID");
+        columnId.setCellValueFactory(new PropertyValueFactory<>("id_number"));
+        columnId.setCellFactory(TextFieldTableCell.forTableColumn());
+        columnId.setOnEditCommit((TableColumn.CellEditEvent<Student, String> t) -> {
+            if (isNumeric(t.getNewValue())){
+                t.getRowValue().setId_number(t.getNewValue());
+                fillStudentInfo();
+            }
+            else{
+                t.getRowValue().setId_number(t.getOldValue());
+                t.getTableView().getColumns().get(0).setVisible(false);
+                t.getTableView().getColumns().get(0).setVisible(true);
+                Timeline timeline = new Timeline(
+                        new KeyFrame(Duration.ZERO, evt -> {
+                            actionText.setFill(Color.FIREBRICK);
+                            actionText.setText("ID must be valid integer.");
+                        }),
+                        new KeyFrame(Duration.seconds(2), evt -> actionText.setText(""))
+                );
+                timeline.play();
+            }
+        });
+
+        TableColumn<Student,String> columnLast = new TableColumn<>("Last Name");
+        columnLast.setCellValueFactory(new PropertyValueFactory<>("last_name"));
+        columnLast.setCellFactory(TextFieldTableCell.forTableColumn());
+        columnLast.setOnEditCommit((TableColumn.CellEditEvent<Student, String> t) -> {
+            t.getRowValue().setLast_name(t.getNewValue());
+            fillStudentInfo();
+        });
+
+        TableColumn<Student,String> columnFirst = new TableColumn<>("First Name");
+        columnFirst.setCellValueFactory(new PropertyValueFactory<>("first_name"));
+        columnFirst.setCellFactory(TextFieldTableCell.forTableColumn());
+        columnFirst.setOnEditCommit((TableColumn.CellEditEvent<Student, String> t) -> {
+            t.getRowValue().setFirst_name(t.getNewValue());
+            fillStudentInfo();
+        });
+
+        // major
+        TableColumn<Student,String> columnMajor = new TableColumn<>("Major");
+        columnMajor.setCellValueFactory(new PropertyValueFactory<>("major"));
+        columnMajor.setCellFactory(param->{
+            //Set up the ChoiceBox
+            final ChoiceBox choiceBox = new ChoiceBox(major_values);
+
+            //Set up the Table
+            TableCell<Student, String> cell = new TableCell<Student, String>() {
+                @Override
+                public void updateItem(String major, boolean empty) {
+                   setGraphic(choiceBox);
+                   if (major != null && !major.equals("")) {
+                           choiceBox.setValue(major);
+                   }
+                   else{
+                       choiceBox.getSelectionModel().clearSelection();
+                   }
+                }
+            };
+            choiceBox.valueProperty().addListener((obs, oldvalue, newvalue) ->{
+                if (cell.getTableRow() != null && cell.getTableRow().getItem() != null) {
+                    if (newvalue == null) {
+                        ((Student) cell.getTableRow().getItem()).setMajor("");
+                    } else {
+                        ((Student) cell.getTableRow().getItem()).setMajor((String) newvalue);
+                    }
+                    fillStudentInfo();
+                }
+            });
+            return cell;
+        });
+
+        TableColumn<Student,String> columnGrade = new TableColumn<>("Grade");
+        columnGrade.setCellValueFactory(new PropertyValueFactory<>("grade"));
+        columnGrade.setCellFactory(param->{
+            //Set up the ChoiceBox
+            final ObservableList<String> grades = FXCollections.observableArrayList("A","B","C","D","F");
+            final ChoiceBox choiceBox = new ChoiceBox(grades);
+
+            //Set up the Table
+            TableCell<Student, String> cell = new TableCell<Student, String>() {
+                @Override
+                public void updateItem(String grade, boolean empty) {
+                    setGraphic(choiceBox);
+                    if (grade != null && !grade.equals("")) {
+                        choiceBox.setValue(grade);
+                    }
+                    else{
+                        choiceBox.getSelectionModel().clearSelection();
+                    }
+                }
+            };
+            choiceBox.valueProperty().addListener((obs, oldvalue, newvalue) ->{
+                if (cell.getTableRow() != null && cell.getTableRow().getItem() != null) {
+                    if (newvalue == null) {
+                        ((Student) cell.getTableRow().getItem()).setGrade("");
+                    } else {
+                        ((Student) cell.getTableRow().getItem()).setGrade((String) newvalue);
+                    }
+                    fillStudentInfo();
+                }
+            });
+            return cell;
+        });
+
+        TableColumn<Student,String> columnGradeop = new TableColumn<>("Grade Option");
+        columnGradeop.setCellValueFactory(new PropertyValueFactory<>("gradeop"));
+        columnGradeop.setCellFactory(param->{
+            //Set up the ChoiceBox
+            final ChoiceBox choiceBox = new ChoiceBox(values);
+
+            //Set up the Table
+            TableCell<Student, String> cell = new TableCell<Student, String>() {
+                @Override
+                public void updateItem(String gradeop, boolean empty) {
+                    setGraphic(choiceBox);
+                    if (gradeop != null && !gradeop.equals("")) {
+                        choiceBox.setValue(gradeop);
+                    }
+                    else{
+                        choiceBox.getSelectionModel().clearSelection();
+                    }
+                }
+            };
+            choiceBox.valueProperty().addListener((obs, oldvalue, newvalue) ->{
+                if (cell.getTableRow() != null && cell.getTableRow().getItem() != null) {
+                    if (newvalue == null) {
+                        ((Student) cell.getTableRow().getItem()).setGradeop("");
+                    } else {
+                        ((Student) cell.getTableRow().getItem()).setGradeop((String) newvalue);
+                    }
+                    fillStudentInfo();
+                }
+            });
+            return cell;
+        });
+
+        TableColumn<Student,String> columnHonor = new TableColumn<>("Honor");
+        columnHonor.setCellValueFactory(new PropertyValueFactory<>("honor"));
+        columnHonor.setCellFactory(param->{
+            //Set up the ChoiceBox
+            final CheckBox checkBox = new CheckBox();
+
+            //Set up the Table
+            TableCell<Student, String> cell = new TableCell<Student, String>() {
+                @Override
+                public void updateItem(String honor, boolean empty) {
+                    setGraphic(checkBox);
+                    if (honor != null) {
+                        checkBox.setSelected(honor.equals("Y"));
+                    }
+                    else{
+                        checkBox.setSelected(false);
+                    }
+                }
+            };
+            checkBox.selectedProperty().addListener((obs, wasSelected, isSelected) ->{
+                if (cell.getTableRow() != null && cell.getTableRow().getItem() != null) {
+                    if (isSelected) {
+                        ((Student) cell.getTableRow().getItem()).setHonor("Y");
+                    } else {
+                        ((Student) cell.getTableRow().getItem()).setHonor("N");
+                    }
+                    fillStudentInfo();
+                }
+            });
+            return cell;
+        });
+
+
+        TableColumn<Student,String> columnNotes = new TableColumn<>("Notes");
+        columnNotes.setCellValueFactory(new PropertyValueFactory<>("notes"));
+        columnNotes.setCellFactory(TextFieldTableCell.forTableColumn());
+        columnNotes.setOnEditCommit((TableColumn.CellEditEvent<Student, String> t) -> {
+            t.getRowValue().setNotes(t.getNewValue());
+            fillStudentInfo();
+        });
+
+        // table styling
+        TableView<Student> table = new TableView<>();
+        table.setEditable(true);
+        table.setMaxHeight(250);
+        table.setItems(listStudents);
+        table.getColumns().addAll(columnPhoto,columnId,columnLast,columnFirst,columnMajor,columnGrade,columnGradeop,columnHonor,columnNotes);
+        table.getSelectionModel().selectedItemProperty().addListener((obs)->{
+            currSt[0] = table.getSelectionModel().getSelectedItem();
+            curr.getAndSet(table.getSelectionModel().getSelectedIndex());
+            fillStudentInfo();
+        });
+
+        HBox.setHgrow(table,Priority.ALWAYS);
+        tablePane.getChildren().add(table);
+
+        /**
+         * FORM AT BOTTOM
+         */
 
         // first 3
         String[] textArr = {"Student ID", "Last Name", "First Name"};
@@ -259,16 +556,13 @@ public class Roster {
         //notes
         HBox.setHgrow(ta, Priority.ALWAYS); // to make it look better
         HBox hBox_ta = new HBox(5, new Label("Notes"), ta);
-        ta.setPrefWidth(200);
+        ta.setPrefWidth(400);
         hBox_ta.setPadding(new Insets(5));
         pane.getChildren().add(hBox_ta);
 
         //photo
         HBox hbox_pic = new HBox(5,new Label("Picture"),openButton);
         hbox_pic.setPadding(new Insets(5));
-        iv.setFitWidth(200);
-        iv.setPreserveRatio(true);
-
         //image open button
         openButton.setOnAction(
                 new EventHandler<ActionEvent>() {
@@ -281,19 +575,18 @@ public class Roster {
                         }
                     }
                 });
+        pane.getChildren().add(hbox_pic);
 
-        pane.getChildren().addAll(hbox_pic,iv);
-
-
-        leftBottomPanel.getChildren().addAll(prevBtn,nextBtn,newBtn,deleteBtn);
+        // bottom panel buttons
+        leftBottomPanel.getChildren().addAll(newBtn,deleteBtn);
         rightBottomPanel.getChildren().add(saveChangesBtn);
 
+        // action text for saves
         pane.getChildren().add(actionText);
 
         newFileBtn.setOnAction(e->{
             final Stage dialog = new Stage();
             dialog.initModality(Modality.APPLICATION_MODAL);
-            dialog.initOwner(primaryStage[0]);
             VBox dialogVbox = new VBox(20);
             dialogVbox.setPadding(new Insets(15,10,15,10));
 
@@ -312,7 +605,7 @@ public class Roster {
                     int roster_id = manager.insertRoster(roster_name);
                     Roster roster = new Roster(roster_id,roster_name);
                     dialog.close();
-                    roster.start(primaryStage);
+                    roster.start();
                 }
             });
             dialogVbox.getChildren().addAll(new Text("Create a new file:"),tf_name,submitBtn,actionText2);
@@ -327,7 +620,6 @@ public class Roster {
             // open up separate window
             final Stage dialog = new Stage();
             dialog.initModality(Modality.APPLICATION_MODAL);
-            dialog.initOwner(primaryStage[0]);
             VBox dialogVbox = new VBox(20);
             dialogVbox.setPadding(new Insets(15,10,15,10));
 
@@ -347,7 +639,7 @@ public class Roster {
                     int roster_id = manager.queryRoster(roster_name);
                     Roster roster = new Roster(roster_id,roster_name);
                     dialog.close();
-                    roster.start(primaryStage);
+                    roster.start();
                 }
             });
             dialogVbox.getChildren().addAll(new Text("Open a file:"),cb,submitBtn,actionText2);
@@ -365,7 +657,7 @@ public class Roster {
             TextField tf_name = new TextField();
             Button submitBtn = new Button("Save");
             submitBtn.setOnAction(evt->{
-                for (Student student: students){
+                for (Student student: listStudents){
                     manager.updateStudent(student,roster_id);
                 }
                 manager.updateRoster(tf_name.getText(),roster_id);
@@ -392,79 +684,54 @@ public class Roster {
 
         // set stage
         rosterStage.setTitle(roster_name);
-        rosterStage.setScene(new Scene(root, 700, 400));
+        rosterStage.setScene(new Scene(root, 800, 500));
+        rosterStage.setMinWidth(675);
         rosterStage.show();
     }
 
     private void fillStudentInfo(){
-        tfArr[0].setText(currSt[0].id_number);
-        tfArr[1].setText(currSt[0].last_name);
-        tfArr[2].setText(currSt[0].first_name);
-        if (currSt[0].major.equals("")) {
+        tfArr[0].setText(currSt[0].getId_number());
+        tfArr[1].setText(currSt[0].getLast_name());
+        tfArr[2].setText(currSt[0].getFirst_name());
+        if (currSt[0].getMajor().equals("")) {
             cb1.getSelectionModel().clearSelection();
         }
         else{
-            cb1.setValue(currSt[0].major);
+            cb1.setValue(currSt[0].getMajor());
         }
 
-        if (currSt[0].grade.equals("A")){
-            group.selectToggle(rb1);
-        }
-        else if (currSt[0].grade.equals("B")){
-            group.selectToggle(rb2);
-        }
-        else if (currSt[0].grade.equals("C")){
-            group.selectToggle(rb3);
-        }
-        else if (currSt[0].grade.equals("D")){
-            group.selectToggle(rb4);
-        }
-        else if (currSt[0].grade.equals("F")){
-            group.selectToggle(rb5);
-        }
-        else{
-            Toggle tog = group.getSelectedToggle();
-            if (tog != null) tog.setSelected(false);
+        switch (currSt[0].getGrade()) {
+            case "A" -> group.selectToggle(rb1);
+            case "B" -> group.selectToggle(rb2);
+            case "C" -> group.selectToggle(rb3);
+            case "D" -> group.selectToggle(rb4);
+            case "F" -> group.selectToggle(rb5);
+            default -> {
+                Toggle tog = group.getSelectedToggle();
+                if (tog != null) tog.setSelected(false);
+            }
         }
 
-        if (currSt[0].grade_option.equals("")) {
+        if (currSt[0].getGradeop().equals("")) {
             cb.getSelectionModel().clearSelection();
         }
         else{
-            cb.setValue(currSt[0].grade_option);
+            cb.setValue(currSt[0].getGradeop());
         }
 
-        if (currSt[0].honor.equals("Y")) {
-            chb.setSelected(true);
-        }
-        else{
-            chb.setSelected(false);
-        }
+        chb.setSelected(currSt[0].getHonor().equals("Y"));
 
-        ta.setText(currSt[0].notes);
+        ta.setText(currSt[0].getNotes());
 
-        if (!currSt[0].photo.equals("")){
-            iv.setImage(new Image(currSt[0].photo));
+        nameText.setText(currSt[0].getFirst_name() + " " + currSt[0].getLast_name());
+
+        updateCharts();
+
+        if (!currSt[0].getPhoto().equals("")){
+            iv.setImage(new Image(currSt[0].getPhoto()));
         }
         else{
             iv.setImage(null);
-        }
-
-        if (curr.get() == 0){
-            prevBtn.setTextFill(Color.GRAY);
-            prevBtn.setDisable(true);
-        }
-        else{
-            prevBtn.setTextFill(Color.BLACK);
-            prevBtn.setDisable(false);
-        }
-        if (curr.get() >= students.size()-1){
-            nextBtn.setTextFill(Color.GRAY);
-            nextBtn.setDisable(true);
-        }
-        else{
-            nextBtn.setTextFill(Color.BLACK);
-            nextBtn.setDisable(false);
         }
     }
     private void saveChanges(){
@@ -476,65 +743,66 @@ public class Roster {
                         actionText.setFill(Color.FIREBRICK);
                         actionText.setText("ID must be valid integer.");
                     }),
-                    new KeyFrame(Duration.seconds(2), evt -> {
-                        actionText.setText("");
-                    })
+                    new KeyFrame(Duration.seconds(2), evt -> actionText.setText(""))
             );
             timeline1.play();
             return;
         }
 
         // first 3
-        currSt[0].id_number = tfArr[0].getText();
-        currSt[0].last_name = tfArr[1].getText();
-        currSt[0].first_name = tfArr[2].getText();
+        currSt[0].setId_number(tfArr[0].getText());
+        currSt[0].setLast_name(tfArr[1].getText());
+        currSt[0].setFirst_name(tfArr[2].getText());
 
         // major
         String major = (String) cb1.getValue();
         if (major == null){
-            currSt[0].major = "";
+            currSt[0].setMajor("");
         }
         else {
-            currSt[0].major = major;
+            currSt[0].setMajor(major);
         }
 
         // grade
         RadioButton button = (RadioButton) group.getSelectedToggle();
         if (button == null){
-            currSt[0].grade = "";
+            currSt[0].setGrade("");
         }
         else {
-            currSt[0].grade = button.getText();
+            currSt[0].setGrade(button.getText());
         }
 
         // grade option
-        currSt[0].grade_option = (String) cb.getValue();
         String grade_option = (String) cb.getValue();
         if (grade_option == null){
-            currSt[0].grade_option = "";
+            currSt[0].setGradeop("");
         }
         else {
-            currSt[0].grade_option = grade_option;
+            currSt[0].setGradeop(grade_option);
         }
 
         // honor
         if (chb.isSelected()){
-            currSt[0].honor = "Y";
+            currSt[0].setHonor("Y");
         }
         else{
-            currSt[0].honor = "N";
+            currSt[0].setHonor("N");
         }
 
         // notes
-        currSt[0].notes = ta.getText();
+        currSt[0].setNotes(ta.getText());
 
         // image
         if (iv.getImage() == null) {
-            currSt[0].photo = "";
+            currSt[0].setPhoto("");
         }
         else{
-            currSt[0].photo = iv.getImage().getUrl();
+            currSt[0].setPhoto(iv.getImage().getUrl());
         }
+
+        nameText.setText(currSt[0].getFirst_name()+ " " + currSt[0].getLast_name());
+
+        updateCharts();
 
         // notify of changes saved
         Timeline timeline = new Timeline(
@@ -542,11 +810,53 @@ public class Roster {
                     actionText.setFill(Color.FIREBRICK);
                     actionText.setText("Changes saved.");
                 }),
-                new KeyFrame(Duration.seconds(2), evt -> {
-                    actionText.setText("");
-                })
+                new KeyFrame(Duration.seconds(2), evt -> actionText.setText(""))
         );
         timeline.play();
+    }
+
+    private void updateCharts(){
+        Map<String, Integer> majorCounts = new HashMap<>();
+        Map<String, Integer> gradeCounts = new HashMap<>();
+
+        for (Student student: listStudents){
+            String major = student.getMajor();
+            String grade = student.getGrade();
+
+            if (!major.equals("")) {
+                Integer count = majorCounts.get(major);
+                if (count == null) {
+                    count = 0;
+                }
+                majorCounts.put(major, count + 1);
+            }
+            if (!grade.equals("")){
+                Integer count = gradeCounts.get(grade);
+                if (count == null){
+                    count = 0;
+                }
+                gradeCounts.put(grade,count+1);
+            }
+        }
+        pieData.clear();
+        barData.clear();
+        majorCounts.forEach((k,v)->{
+            naiveAddPieData(k,v);
+        });
+        gradeCounts.forEach((k,v)->{
+            naiveAddBarData(k,v);
+        });
+
+    }
+
+    public void naiveAddPieData(String name, int value)
+    {
+        pieData.add(new PieChart.Data(name, value));
+    }
+
+    public void naiveAddBarData(String grade, int value)
+    {
+        barData.add(new XYChart.Data<String,Number>(grade,value));
     }
 
     private static void configureFileChooser(final FileChooser fileChooser){

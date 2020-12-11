@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane prefHeight="500.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <center>
+      <TabPane tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+        <tabs>
+          <Tab text="Roster">
+            <content>
+              <BorderPane id="rosterPane" minHeight="0.0" minWidth="0.0">
+                     <bottom>
+                        <AnchorPane id="bottomPanel" BorderPane.alignment="CENTER">
+                           <children>
+                              <HBox spacing="10.0" AnchorPane.leftAnchor="5.0">
+                                 <padding>
+                                    <Insets bottom="5.0" left="12.0" right="12.0" top="5.0" />
+                                 </padding>
+                                 <children>
+                                    <Button id="newStudentBtn" fx:id="newStudentBtn" mnemonicParsing="false" onAction="#addNewStudent" text="New Student" />
+                                    <Button id="deleteStudentBtn" fx:id="deleteStudentBtn" mnemonicParsing="false" onAction="#deleteStudent" text="Delete Student" />
+                                 </children>
+                              </HBox>
+                              <HBox spacing="10.0" AnchorPane.rightAnchor="5.0">
+                                 <padding>
+                                    <Insets bottom="5.0" left="12.0" right="12.0" top="5.0" />
+                                 </padding>
+                                 <children>
+                                    <Button fx:id="saveChangesBtn" mnemonicParsing="false" onAction="#saveChangesFromBtn" text="Save Changes" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </AnchorPane>
+                     </bottom>
+                     <center>
+                        <ScrollPane BorderPane.alignment="CENTER">
+                             <content>
+                                 <BorderPane id="center" prefWidth="1500.0" prefHeight="800.0">
+                                     <top>
+                                         <HBox>
+                                       <children>
+                                          <TableView fx:id="table" editable="true" maxHeight="250.0" />
+                                       </children></HBox>
+                                     </top>
+                                     <center>
+                                         <HBox prefHeight="80.0" spacing="30.0">
+                                       <children>
+                                          <StackPane>
+                                             <children>
+                                                 <Text id="nameText" fx:id="nameText" strokeType="OUTSIDE" strokeWidth="0.0" text="First Last" />
+                                             </children>
+                                          </StackPane>
+                                           <StackPane>
+                                               <ImageView fx:id="imageView" fitHeight="70.0" pickOnBounds="true" preserveRatio="true" />
+                                           </StackPane>
+                                       </children></HBox>
+                                     </center>
+                                     <bottom>
+                                         <FlowPane orientation="VERTICAL" prefWrapLength="300.0">
+                                       <children>
+                                          <HBox spacing="5.0">
+                                             <padding>
+                                                <Insets top="5.0" />
+                                             </padding>
+                                             <children>
+                                                <Label text="Student ID" />
+                                                <TextField fx:id="idTextField" />
+                                             </children>
+                                          </HBox>
+                                          <HBox layoutX="10.0" layoutY="10.0" spacing="5.0">
+                                             <padding>
+                                                <Insets top="5.0" />
+                                             </padding>
+                                             <children>
+                                                <Label text="Last Name" />
+                                                <TextField fx:id="lastNameTextField" />
+                                             </children>
+                                          </HBox>
+                                          <HBox layoutX="447.0" layoutY="10.0" spacing="5.0">
+                                             <padding>
+                                                <Insets top="5.0" />
+                                             </padding>
+                                             <children>
+                                                <Label text="First Name" />
+                                                <TextField fx:id="firstNameTextField" />
+                                             </children>
+                                          </HBox>
+                                          <HBox layoutX="10.0" layoutY="10.0" spacing="5.0">
+                                             <padding>
+                                                <Insets top="5.0" />
+                                             </padding>
+                                             <children>
+                                                <Label text="Major" />
+                                                <ChoiceBox fx:id="majorChoiceBox" prefWidth="150.0" />
+                                             </children>
+                                          </HBox>
+                                          <HBox layoutX="10.0" layoutY="106.0" spacing="5.0">
+                                             <padding>
+                                                <Insets top="5.0" />
+                                             </padding>
+                                              <fx:define>
+                                                  <ToggleGroup fx:id="toggleGroup" />
+                                              </fx:define>
+                                             <children>
+                                                <Label text="Current Grade" />
+                                                 <RadioButton fx:id="rbA" text="A" toggleGroup="$toggleGroup" />
+                                                <RadioButton fx:id="rbB" layoutX="103.0" layoutY="15.0" text="B" toggleGroup="$toggleGroup" />
+                                                <RadioButton fx:id="rbC" layoutX="140.0" layoutY="15.0" text="C" toggleGroup="$toggleGroup" />
+                                                <RadioButton fx:id="rbD" layoutX="177.0" layoutY="15.0" text="D" toggleGroup="$toggleGroup" />
+                                                <RadioButton fx:id="rbF" layoutX="214.0" layoutY="15.0" text="F" toggleGroup="$toggleGroup" />
+                                             </children>
+                                          </HBox>
+                                          <HBox layoutX="10.0" layoutY="106.0" spacing="5.0">
+                                             <padding>
+                                                <Insets top="5.0" />
+                                             </padding>
+                                             <children>
+                                                <Label text="Grade Option" />
+                                                <ChoiceBox fx:id="gradeChoiceBox" prefWidth="150.0" />
+                                             </children>
+                                          </HBox>
+                                          <HBox layoutX="10.0" layoutY="206.0" spacing="5.0">
+                                             <padding>
+                                                <Insets top="5.0" />
+                                             </padding>
+                                             <children>
+                                                <Label text="Honor Student?" />
+                                                 <CheckBox fx:id="honorCheckBox" />
+                                             </children>
+                                          </HBox>
+                                          <HBox layoutX="10.0" layoutY="306.0" spacing="5.0">
+                                             <padding>
+                                                <Insets top="5.0" />
+                                             </padding>
+                                             <children>
+                                                <Label text="Notes" />
+                                                 <TextArea fx:id="notesTextArea" prefWidth="400.0" />
+                                             </children>
+                                          </HBox>
+                                          <HBox layoutX="249.0" layoutY="10.0" spacing="5.0">
+                                             <padding>
+                                                <Insets top="5.0" />
+                                             </padding>
+                                             <children>
+                                                <Label text="Picture" />
+                                                 <Button fx:id="openPictureBtn" onAction="#selectImage" text="Open a Picture..." />
+                                             </children>
+                                          </HBox>
+                                           <Text fx:id="actionText" />
+                                       </children></FlowPane>
+                                     </bottom>
+                                 <padding>
+                                    <Insets bottom="10.0" left="12.0" right="12.0" top="10.0" />
+                                 </padding>
+                                 </BorderPane>
+                             </content>
+                        </ScrollPane>
+                     </center></BorderPane>
+            </content>
+          </Tab>
+          <Tab text="Stats">
+            <content>
+              <ScrollPane id="scrollPane" minHeight="0.0" minWidth="0.0">
+                  <content>
+                      <HBox fx:id="statsHBox" >
+                      </HBox>
+                  </content>
+              </ScrollPane>
+
+            </content>
+          </Tab>
+        </tabs>
+      </TabPane>
+   </center>
+   <top>
+      <HBox id="topPanel" spacing="10.0" BorderPane.alignment="CENTER">
+         <padding>
+            <Insets bottom="5.0" left="12.0" right="12.0" top="5.0" />
+         </padding>
+         <children>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="File Menu:" />
+            <Button fx:id="newFileBtn" mnemonicParsing="false" onAction="#newFile" text="New" />
+            <Button fx:id="openFileBtn" layoutX="60.0" layoutY="15.0" mnemonicParsing="false" onAction="#openFile" text="Open" />
+            <Button fx:id="saveFileBtn" layoutX="129.0" layoutY="15.0" mnemonicParsing="false" onAction="#saveFile" text="Save" />
+            <Button fx:id="saveAsFileBtn" layoutX="198.0" layoutY="15.0" mnemonicParsing="false" onAction="#saveAs" text="Save As" />
+            <Button fx:id="closeFileBtn" layoutX="267.0" layoutY="15.0" mnemonicParsing="false" onAction="#closeFile" text="Close" />
+            <Button fx:id="closeAppBtn" layoutX="336.0" layoutY="15.0" mnemonicParsing="false" onAction="#closeApp" text="Exit" />
+         </children>
+      </HBox>
+   </top>
+</BorderPane>

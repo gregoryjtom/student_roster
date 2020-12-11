@@ -1,0 +1,50 @@
+#statsBox{
+    -fx-background-color: #a35d3c;
+}
+
+.scroll-pane .viewport{
+    -fx-background-color: #ebe4e4;
+}
+
+
+#topPanel{
+    -fx-background-color: #8aaff2;
+}
+
+#bottomPanel{
+    -fx-background-color: #d1c9c9;
+}
+
+Label{
+    -fx-font-family: "Helvetica";
+}
+
+Button{
+    -fx-font-family: "Calibri";
+}
+
+#nameText{
+    -fx-font-family: "Helvetica";
+    -fx-font-weight: bold;
+    -fx-font-size: 26pt;
+}
+
+#newStudentBtn{
+    -fx-text-fill: #129214;
+}
+
+#deleteStudentBtn{
+    -fx-text-fill: #fd0404;
+}
+
+TextField{
+   -fx-font-family: "Helvetica";
+}
+
+TextArea{
+    -fx-font-family: "Helvetica";
+}
+
+TableView{
+    -fx-font-family: "Helvetica";
+}

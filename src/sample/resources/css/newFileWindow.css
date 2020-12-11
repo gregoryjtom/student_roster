@@ -1,0 +1,18 @@
+Text{
+    -fx-font-family: "Helvetica";
+    -fx-font-weight: bold;
+    -fx-font-size: 11pt;
+}
+
+.root{
+    -fx-background-color: #becbed;
+}
+
+TextField{
+   -fx-font-family: "Helvetica";
+}
+
+Button{
+    -fx-font-family: "Calibri";
+    -fx-font-size: 11pt;
+}

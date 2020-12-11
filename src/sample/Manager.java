@@ -2,28 +2,13 @@ package sample;
 import java.sql.*;
 import java.util.Vector;
 
-/*
-need to add
-- update student (note: making it mandatory to add all fields? does it even matter?)
-- delete student
-- new roster
-
-- query student (based on id)
-- query student id's in roster
-
-
-need to create interface:
-- stores student id's of current roster
-- stores current roster id
-- stores if new or not
- */
-
 public class Manager {
     private Connection conn;
     private int max_students = 100;
     private int max_rosters = 20;
+    private static Manager manager = new Manager();
 
-    public Manager() {
+    private Manager() {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();
         } catch (Exception e) {
@@ -31,6 +16,9 @@ public class Manager {
         }
         try {
             conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/?user=root&password=Dskitty12;&serverTimezone=UTC");
+            Statement stmt = conn.createStatement();
+            stmt.executeUpdate("USE rosterdb");
+            stmt.close();
         } catch (SQLException ex) {
             // handle any errors
             System.out.println("SQLException: " + ex.getMessage());
@@ -38,18 +26,9 @@ public class Manager {
             System.out.println("VendorError: " + ex.getErrorCode());
         }
     }
-    public void initializeDB(){
-        try {
-            Statement stmt = conn.createStatement();
-            stmt.executeUpdate("USE rosterdb");
-            stmt.close();
-        }
-        catch (SQLException ex) {
-            // handle any errors
-            System.out.println("SQLException: " + ex.getMessage());
-            System.out.println("SQLState: " + ex.getSQLState());
-            System.out.println("VendorError: " + ex.getErrorCode());
-        }
+
+    public static Manager getInstance(){
+        return manager;
     }
 
     public Vector<Student> queryStudentsInRoster(int roster_id){
@@ -87,10 +66,10 @@ public class Manager {
         try{
             Statement stmt = conn.createStatement();
             int success = stmt.executeUpdate("INSERT INTO students " +
-                    "VALUES (" + st.id_number + ", '" + st.last_name + "', '"
-                    + st.first_name + "', '" + st.major + "', '" + st.grade + "', '"
-                    + st.grade_option + "', '" + st.honor + "', '" + st.notes
-                    + "', '" + st.photo + "', " + roster_id +  ")");
+                    "VALUES (" + st.getId_number() + ", '" + st.getLast_name() + "', '"
+                    + st.getFirst_name() + "', '" + st.getMajor() + "', '" + st.getGrade() + "', '"
+                    + st.getGradeop() + "', '" + st.getHonor() + "', '" + st.getNotes()
+                    + "', '" + st.getPhoto() + "', " + roster_id +  ")");
 
             if (success != 0) {
                 System.out.println("Successfully inserted student.");
@@ -111,13 +90,13 @@ public class Manager {
 
     public void updateStudent(Student st, int roster_id){
         // if id_number is not filled, then return immediately and do nothing
-        if (st.id_number.equals("")){
+        if (st.getId_number().equals("")){
             return;
         }
         try{
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM students " +
-                    "WHERE student_id = '" + st.id_number + "'");
+                    "WHERE student_id = '" + st.getId_number() + "'");
             // if no results found, then insert:
             if (!rs.next()){
                 insertStudent(st,roster_id);
@@ -125,10 +104,10 @@ public class Manager {
             // otherwise update the values
             else {
                 int success = stmt.executeUpdate("UPDATE students " +
-                        "SET last_name = '" + st.last_name + "', first_name = '" + st.first_name + "', major = '" +
-                        st.major + "', current_grade = '" + st.grade + "', grade_option = '" + st.grade_option + "', honor = '" +
-                        st.honor + "', notes = '" + st.notes + "', photo_url = '" + st.photo + "' "
-                        + "WHERE student_id = '" + st.id_number + "'");
+                        "SET last_name = '" + st.getLast_name() + "', first_name = '" + st.getFirst_name() + "', major = '" +
+                        st.getMajor() + "', current_grade = '" + st.getGrade() + "', grade_option = '" + st.getGradeop() + "', honor = '" +
+                        st.getHonor() + "', notes = '" + st.getNotes() + "', photo_url = '" + st.getPhoto() + "' "
+                        + "WHERE student_id = '" + st.getId_number() + "'");
                 if (success != 0) {
                     System.out.println("Successfully updated student.");
                 } else {

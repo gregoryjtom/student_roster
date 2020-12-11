@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="300.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.HomeController">
+   <center>
+      <StackPane fx:id="logo" prefHeight="150.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+         <children>
+            <Rectangle fx:id="rect" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="100.0" stroke="BLACK" strokeType="INSIDE" width="100.0" />
+            <Text id="text" fx:id="text" strokeType="OUTSIDE" strokeWidth="0.0" text="RT">
+               <font>
+                  <Font name="System Font" size="28.0" />
+               </font>
+            </Text>
+         </children></StackPane>
+   </center>
+   <bottom>
+      <AnchorPane BorderPane.alignment="CENTER">
+         <children>
+            <Text id="titleText" strokeType="OUTSIDE" strokeWidth="0.0" text="Welcome to Roster Tracker!" AnchorPane.bottomAnchor="80.0" AnchorPane.leftAnchor="125.0" />
+            <HBox spacing="30.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="140.0">
+               <children>
+                  <Button fx:id="openBtn" mnemonicParsing="false" text="Open Roster" onAction = "#openRoster"/>
+                  <Button fx:id="newBtn" mnemonicParsing="false" text="New Roster" onAction = "#newRoster"/>
+               </children>
+            </HBox>
+            <Text fx:id="actionText" strokeType="OUTSIDE" strokeWidth="0.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="140.0" />
+         </children></AnchorPane>
+   </bottom>
+</BorderPane>

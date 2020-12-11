@@ -1,0 +1,23 @@
+#text{
+    -fx-font-family: "Futura";
+    -fx-font-weight: bold;
+    -fx-font-size: 60pt;
+    -fx-fill: white;
+}
+
+
+Button{
+    -fx-font-family: "Calibri";
+    -fx-font-size: 11pt;
+}
+
+.root{
+    -fx-background-color: #ebe4e4;
+}
+
+
+#titleText{
+    -fx-font-family: "Helvetica";
+    -fx-font-weight: bold;
+    -fx-font-size: 14pt;
+}

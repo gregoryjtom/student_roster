@@ -1,0 +1,18 @@
+Text{
+    -fx-font-family: "Helvetica";
+    -fx-font-weight: bold;
+    -fx-font-size: 11pt;
+}
+
+ChoiceBox{
+    -fx-font-family: "Calibri";
+}
+
+.root{
+    -fx-background-color: #becbed;
+}
+
+Button{
+    -fx-font-family: "Calibri";
+    -fx-font-size: 11pt;
+}
